@@ -22,6 +22,9 @@ Visit `https://localhost:8000` to view the slides.
 
 ## Generate PDF of the deck
 
+P.S. The repo already has a pdf version of the deck you can view here 
+https://github.com/StymiedSloth/graphql_meetup_slides_032020/blob/master/deck.pdf
+
 ```bash
 npm start
 ```
