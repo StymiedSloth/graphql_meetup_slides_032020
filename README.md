@@ -25,7 +25,7 @@ Visit `https://localhost:8000` to view the slides.
 ```bash
 npm start
 ```
-Verify deck are working at `https://localhost:8000`.
+Verify deck is working by visiting `https://localhost:8000`.
 
 In another terminal tab or window
 ```bash
