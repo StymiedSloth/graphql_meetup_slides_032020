@@ -1,0 +1,16 @@
+{
+  "private": true,
+  "name": "graphql-meetup-slides",
+  "version": "0.1.0",
+  "scripts": {
+    "start": "mdx-deck deck.mdx",
+    "build": "mdx-deck build deck.mdx",
+    "help": "mdx-deck"
+  },
+  "devDependencies": {
+    "file-loader": "^5.1.0",
+    "gatsby-source-filesystem": "^2.1.48",
+    "mdx-deck": "^4.1.0",
+    "website-pdf": "^4.1.0"
+  }
+}

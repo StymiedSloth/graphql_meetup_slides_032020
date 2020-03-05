@@ -1,0 +1,403 @@
+import { themes } from 'mdx-deck'
+import { Image } from 'mdx-deck'
+import harsha from './images/harsha.png'
+import ddd from './images/ddd.jpg'
+import metro from './images/metro.png'
+import breakingChanges from './images/breakingchanges.png'
+import performanceGQL from './images/performance_gql.gif'
+import performanceGQL2 from './images/performance_gql_2.png'
+import simpleResolver from './images/simple_resolver.png'
+import goodWithQueryID from './images/good_with_query_id.png'
+import badNoQueryID from './images/bad_no_query_id.png'
+import ddtraceExample from './images/ddtrace_example.png'
+import ddtraceExample2 from './images/ddtrace_example_2.png'
+import experts from './images/experts.png'
+
+export const theme = themes.poppins
+
+<Head>
+  <title>10 GraphQL ideas for scaling</title>
+</Head>
+
+# Ten useful ideas to scale up GraphQL
+
+and serve millions of requests per day
+
+---
+<Image src={harsha} 
+style={{
+    width: '250px',
+    height: '250px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'left',
+  }}
+/>
+
+# Harsha Reddy
+- Senior Software Engineer 
+- Internal API Engineering @ Wayfair
+
+---
+
+# 1 - Domain Driven Design
+
+an exercise in saving your graph 😎
+
+---
+
+# [Three core principles](https://dddcommunity.org/learning-ddd/what_is_ddd/)
+
+- Focus on the core domain concepts and their relationships
+- Base complex designs on models of the domain
+- Constantly collaborate with domain experts, in order to improve the application model and resolve any emerging domain-related issues
+
+---
+
+# My fav mantras
+
+- Design before your write a single line of code.
+- Clear and concise use cases. Describe your data domain well.
+- GraphQL schema is not a 1:1 with your DB and View layer.
+  - Avoid direct use of columns from DB e.g. articleSurveyQuestionID, ugh
+  - Avoid view layer concerns e.g. shouldShowHeader, ugh'ier
+- Don't be afraid of multiple revisions to a design.
+
+---
+
+# 2 - Stop Breaking changes
+
+If I had a dollar everytime someone broke an API contract 😭
+
+---
+
+# Some hard truths
+
+- Versioning GraphQL schema might not feasible
+- Schema Change requests on large GraphQL are not possible due to volume of daily commits
+- cannot block developers too long, even a few minutes is bad 
+
+So how did we stop breaking changes to the schema 🤔?
+
+---
+
+# Enter deprecationReason, the hero ️🦸‍♂
+
+### Stop breaking changes
+- Block any and all changes that modify and delete fields or types.
+- Adding fields or types is allowed.
+- Block any changes that render a schema ungenerateable
+
+### How does one delete/modify fields
+- Add a deprecationReason to the field or type
+- Next, Add Internal logging when these are queried by clients
+    - this means queries are still using the deprecated field.
+- Delete field when all queries have moved on.
+
+---
+
+# How does it look?
+
+Integrate [GraphQL Inspector](https://github.com/kamilkisiela/GraphQL-inspector) into Buildkite to run a validation check on Pull Requests.
+
+<Image src={breakingChanges} 
+style={{
+    margin: '10px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'left',
+    'background-size': 'contain', 
+  }}
+/>
+
+---
+
+# 3 - Performance Monitoring
+
+Is GraphQL slow 🐢? How dare you!!
+
+---
+
+# Give them the power of speed
+
+- Utilize [Apollo Tracing]() to record query Performance
+- Reverse engineer the above into all applications as a GraphQL middleware.
+- Show this info to engineers in an easy and digestable way.
+
+---
+
+# Show me the money?
+
+<Image src={performanceGQL} 
+style={{
+    margin: '50px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'left',
+    'background-size': 'contain', 
+  }}
+/>
+
+---
+
+# Mo Money
+
+<Image src={performanceGQL2} 
+style={{
+    margin: '50px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'left',
+    'background-size': 'contain', 
+  }}
+/>
+
+---
+
+# 4 - Error Handling
+
+Catch the sneaky ones
+
+---
+
+# Our rules
+
+- **[Observability](https://blog.twitter.com/engineering/en_us/a/2016/observability-at-twitter-technical-overview-part-i.html)** is a primary focus
+  - logs MUST identify the failing query
+  - logs MUST capture the resolver that caught/logged the exception
+  - logs MUST record a stack trace that has reference to business logic code run along with GraphQL code
+  - logs MUST tune severity correct, not everything needs to be a red alert Error.
+- Logs are **THROTTLED** when needed to avoid blowing up infrastructure.
+- Differentiate between **User Generated** and **System errors**.
+
+I'll avoid going into too much detail on this. It's a session on its own.
+
+---
+
+# Show me something unique
+
+Useful response codes to return
+
+|                                                        	| Response Code                 	|
+|--------------------------------------------------------	|-------------------------------	|
+|                                                        	|                               	|
+| A GraphQL query without any errors                     	| **200 OK**                    	|
+| -----------------------------------------------------  	| ------------------------- 	    |
+| Partial query success with any errors                  	| **207 MULTI-STATUS**          	|
+| -----------------------------------------------------  	| ------------------------- 	    |
+| A complete query failure                               	| **500 Internal Server Error** 	|
+| -----------------------------------------------------  	| ------------------------- 	    |
+| A code change the resulted in schema/framework failure 	| **503 Service Unavailable**   	|
+| -----------------------------------------------------  	| ------------------------- 	    |
+| A query request from client that we don't recognize    	| **400 Bad Request**           	|
+
+---
+
+# 5 - Simple Resolvers
+
+How I stopped worrying and learned to love dumb resolvers
+
+--- 
+
+# Avoid business logic in resolvers
+
+- Resolvers should act as routes to the business logic
+- Bad arguments to resolvers result in a fast fail
+- Valid arguments help in directing to the right business logic
+
+<Image src={simpleResolver} 
+style={{
+    'max-width': '60%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'left',
+    'background-size': 'contain', 
+  }}
+/>
+
+---
+
+# Reasons
+
+- Sharing business logic modules between REST, GraphQL. Yes, that is more common that you think.
+- Avoid fracturing business logic between resolvers and other places in code like models.
+- Avoiding Fractured unit tests. It is not fun to write unit tests twice.
+- Helps keep the schema relatively clean, devoid of any major issues.
+- Easy to change business logic by just changing the route.
+
+and more 😬.
+
+--- 
+
+# 6 - Persisted Queries
+
+They are freaking awesome
+
+---
+# Info
+
+- Perisisted query is a fancy term for clients sending a unique query identifier instead of the full GraphQL query over the wire.
+
+- If you are in the Apollo ecosystem, I highly recommend you opt into Persisted queries.
+
+- Even outside that ecosystem, it's easy enough to generate and persist queries. Here's a simple way to go about it
+  - A persisted query ID can be the md5 of the query contents in an application
+  - Persist that to storage like a file or DB with a caching layer in front.
+  - Load this data with all queries into memory. (Refer to Read Through Cache pattern for this)
+  - Any GraphQL request will use that to lookup the query given an ID.
+  - When code is deployed to production, re-populate the persisted queries. 
+
+---
+
+# How to enhance this?
+
+- Persisted query ids should permeate all your ecosystems from logs, performance monitoring, time series etc.
+- All GraphQL requests hit a single endpoint
+  - Append the persisted query id to the url to help with observability.
+
+<Image src={goodWithQueryID} 
+style={{
+    'max-width': '70%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'left',
+    'background-size': 'contain', 
+  }}
+/>
+
+---
+
+# 7 - Custom Validation rules
+
+Rules that run before query gets executed
+
+---
+
+# Example
+
+- Custom Rules can run on field, type, directive etc.
+- Check out the default rules here [Validation Rules GQL JS](https://github.com/GraphQL/GraphQL-js/tree/master/src/validation/rules)
+- A good example is a custom deprecation rule.
+  - Log any usage of deprecated fields
+  - Keep a dashboard of the usages
+  - Teams actively use this to update their queries
+  - Once teams are happy a deprecated field is no longer used, it is deleted.
+
+---
+
+# 8 - APM integration
+
+Application Performance Monitoring
+
+---
+
+# Distributed Tracing and GraphQL
+
+- [Distributed (Open) Tracing](https://opentracing.io/docs/overview/what-is-tracing/), also called distributed request tracing, is a method used to profile and monitor applications, especially those built using a microservices architecture. 
+- Distributed tracing helps pinpoint where failures occur and what causes poor performance.
+- Services like [Datadog](https://www.datadoghq.com/) can help monitor traces effectively by utlizing distributed tracing.
+
+Using this at scale to help monitor GraphQL query performance and perform deep dives is magical.
+
+---
+
+# Examples
+
+[DDTrace GraphQL in Python](https://github.com/beezz/ddtrace-GraphQL)
+
+[Datadog APM docs](https://www.datadoghq.com/apm/)
+
+<Image src={ddtraceExample}
+style={{
+    'max-width': '95%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'left',
+    'background-size': 'contain', 
+  }}
+/>
+
+---
+
+# Examples (cont.)
+
+<Image src={ddtraceExample2}
+style={{
+    'max-width': '95%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'left',
+    'background-size': 'contain', 
+  }}
+/>
+
+---
+
+# 9 - Inclusive community
+
+- Empower teams to be experts
+- They know their domain much better 
+- [GraphQL Schema Design](https://speakerdeck.com/xuorig/GraphQL-schema-design-at-scale?slide=25)
+
+<Image src={experts}
+style={{
+    'max-width': '95%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'left',
+    'background-size': 'contain', 
+  }}
+/>
+
+---
+
+# Make Domain experts GraphQL Experts
+
+- Developers have the natural enthusiasm to learn
+- Provide an easy path for developers to become an expert in GraphQL.
+- Incentivize and encourage them. Give them with the elusive GraphQL Expert title.
+- Encourage responsibility and domain ownership amongst them.
+- They up the knowledge of the entire team and expertise spreads.
+
+(It's a Pyramid scheme .. shhhh)
+
+---
+
+# 10 - GraphQL does not fit every scenario
+
+There I said it! Watch your profanity 🤬
+
+---
+
+# When Not to Use GraphQL
+
+- **Authentication** Is usually handled by headers / hashing (stateless) or by specific service endpoints that then set up authenticated sessions or provide tokens for use with the API.☞
+- **File Uploads** You could send a base64 string with a mutation, but large files result in large (and therefore unwieldy, slow to process) strings. A dedicated endpoint for uploads is more practical. 
+- **Dynamic Connections** This can happen with generic key/value pairs where the value amounts to a foreign key. The nature of those connections will vary from query to query. The bad smell should be that foreign key, since GraphQL is all about avoiding them in favor of connections.☞
+- **RPC-Style Operations** Aren't there better solutions for this like gRPC. Prefer to avoid using mutations for such operations.
+
+---
+
+# My Contact
+
+<Image src={harsha} 
+style={{
+    width: '150px',
+    height: '150px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'left',
+  }}
+/>
+
+|          	|                                                                      	|
+|----------	|----------------------------------------------------------------------	|
+| Twitter  	|         [twitter.com/stymied_sloth](https://twitter.com/stymied_sloth)           	|
+| LinkedIn 	|         [www.linkedin.com/in/harshadeepreddy/](https://www.linkedin.com/in/harshadeepreddy/) 	|
+| Github   	|         [github.com/StymiedSloth](https://github.com/StymiedSloth)              	|
+
+---
+
+# Fin.
+
+Thank you.
